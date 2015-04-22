@@ -1,5 +1,6 @@
 import Queue
 from heapq import heappush, heappop
+from math import sqrt
 
 def find_path(src, dst, mesh):
 	
@@ -14,18 +15,14 @@ def find_path(src, dst, mesh):
 	dstBox = None
 	hasPath = 0
 	
-	#Identify the source and destination boxes
 	for box in boxes:
 		x1, x2, y1, y2 = box
 		#print 'working'
 		if sx < y2 and sy < x2 and sx > y1 and sy > x1:
 			print 'found src'
 			#path.append((src, dst))
-			diffX = x2 - sx
-			diffY = y2 - sy
 			srcBox = box
 			detail_points[srcBox] = sx, sy
-			
 	
 	for box in boxes:
 		x1, x2, y1, y2 = box
@@ -37,7 +34,6 @@ def find_path(src, dst, mesh):
 			detail_points[dstBox] = dx, dy
 	
 
-	#Implement the simplest complete search algorithm you can
 	
 	q = Queue.Queue()
 	queue = []
@@ -67,9 +63,9 @@ def find_path(src, dst, mesh):
 			nx1, nx2, ny1, ny2 = edge
 			detail_points[edge] =  (min(nx2-1,max(nx1,x)), min(ny2-1,max(ny1,y)))
 			x2, y2 = detail_points[edge]
-			x3 = x2 - x
-			y3 = y2 - y
-			distance = dist[node] #+ sqrt(x3*x3+y3*y3)
+			x3 = x2 - dx		#for Djikstra's delete the d in dx
+			y3 = y2 - dy		#for Djikstra's delete the d in dy
+			distance = dist[node] + sqrt(x3*x3+y3*y3)
 			if edge not in dist or distance < dist[edge]:
 				dist[edge] = distance
 				prev[edge] = node
@@ -82,18 +78,8 @@ def find_path(src, dst, mesh):
 		while node != srcBox:
 			path.append((detail_points[prev[node]], detail_points[node]))
 			node = prev[node]
-		
-		
+	
 	if hasPath < 1:
 		print "No Path Found"
-		
-	
-	#Modify your simple search to compute a legal list of line segments demonstrating the path
-	
-	#Modify your simple search to implement Dijkstra's algorithm
-	
-	#Modify your Dijkstra's implementation into an A* implementation
-	
-	#Modify your Dijkstra's (or A*) into a bidirectional Dijkstra's (or bidirectional A*)
 	
 	return path, visited
