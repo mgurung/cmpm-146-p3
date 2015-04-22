@@ -1,4 +1,5 @@
 import Queue
+from heapq import heappush, heappop
 
 def find_path(src, dst, mesh):
 	
@@ -7,16 +8,12 @@ def find_path(src, dst, mesh):
 	adj = mesh['adj']
 	boxes = mesh['boxes']
 	detail_points = {}
-	srcFound = 0
-	dstFound = 0
 	sy, sx = src
 	dy, dx = dst
 	srcBox = None
 	dstBox = None
 	hasPath = 0
-	diffX = 0
-	diffY = 0
-	#print 'working'
+	
 	#Identify the source and destination boxes
 	for box in boxes:
 		x1, x2, y1, y2 = box
@@ -27,8 +24,7 @@ def find_path(src, dst, mesh):
 			diffX = x2 - sx
 			diffY = y2 - sy
 			srcBox = box
-			detail_points[srcBox] = sy, sx
-			srcFound = 1
+			detail_points[srcBox] = sx, sy
 			
 	
 	for box in boxes:
@@ -38,55 +34,59 @@ def find_path(src, dst, mesh):
 			print 'found dst'
 			#path.append((src, dst))
 			dstBox = box
-			detail_points[dstBox] = (dy, dx)
-			dstFound = 1
+			detail_points[dstBox] = dx, dy
 	
-	#print src
-	#print detail_points[srcBox]
+
 	#Implement the simplest complete search algorithm you can
 	
 	q = Queue.Queue()
-	#discovered = []
+	queue = []
+	dist = {}
+	prev = {}
+
+	distance = 0
+	dist[srcBox] = distance
+	prev[srcBox] = None
+	heappush(queue, srcBox)
 	q.put(srcBox)
 	visited.append(srcBox)
-	prev = detail_points[srcBox]
-	while not q.empty():
-		node = q.get()
+	
+	while queue:
+		node = heappop(queue)
 		
 		if node == dstBox:
+			print 'dstBox found'
 			hasPath = 1
-			path.append((prev, detail_points[dstBox]))
 			break
 			
-		y, x = detail_points[node]
+		x, y = detail_points[node]
 		
 		edges = adj[node]
+		
 		for edge in edges:
-			if edge not in visited:
+			nx1, nx2, ny1, ny2 = edge
+			detail_points[edge] =  (min(nx2-1,max(nx1,x)), min(ny2-1,max(ny1,y)))
+			x2, y2 = detail_points[edge]
+			x3 = x2 - x
+			y3 = y2 - y
+			distance = dist[node] #+ sqrt(x3*x3+y3*y3)
+			if edge not in dist or distance < dist[edge]:
+				dist[edge] = distance
+				prev[edge] = node
 				q.put(edge)
 				visited.append(edge)
-				nx1, nx2, ny1, ny2 = edge
-				detail_points[edge] = (min(ny2-1,max(ny1,y)), min(nx2-1,max(nx1,x)))
+				heappush(queue, edge)
+				
 		
+	if node == dstBox:
+		while node != srcBox:
+			path.append((detail_points[prev[node]], detail_points[node]))
+			node = prev[node]
 		
-		if prev != detail_points[srcBox]:
-			path.append((prev, detail_points[node]))
-			
-		prev = detail_points[node]
-	'''	
-	prev = None
-	curr = None
-	for v in visited:
-		if !prev:
-			prev = detail_points[visited.pop()]
-			curr = detail_points[visited.pop()]
-		else:
-			prev = curr
-			curr = detail_points[visited.pop()]
 		
 	if hasPath < 1:
 		print "No Path Found"
-	'''	
+		
 	
 	#Modify your simple search to compute a legal list of line segments demonstrating the path
 	
