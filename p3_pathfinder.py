@@ -43,12 +43,13 @@ def find_path(src, dst, mesh):
 	distance = 0
 	dist[srcBox] = distance
 	prev[srcBox] = None
-	heappush(queue, srcBox)
+	heappush(queue, [0,srcBox,dstBox])
+	heappush(queue, [0,dstBox,srcBox])
 	q.put(srcBox)
 	visited.append(srcBox)
 	
 	while queue:
-		node = heappop(queue)
+		_,node,goal = heappop(queue)
 		
 		if node == dstBox:
 			print 'dstBox found'
@@ -63,22 +64,23 @@ def find_path(src, dst, mesh):
 			nx1, nx2, ny1, ny2 = edge
 			detail_points[edge] =  (min(nx2-1,max(nx1,x)), min(ny2-1,max(ny1,y)))
 			x2, y2 = detail_points[edge]
-			x3 = x2 - dx		#for Djikstra's delete the d in dx
-			y3 = y2 - dy		#for Djikstra's delete the d in dy
+			x3 = x2 - x		#for Djikstra's delete the d in dx
+			y3 = y2 - y		#for Djikstra's delete the d in dy
 			distance = dist[node] + sqrt(x3*x3+y3*y3)
 			if edge not in dist or distance < dist[edge]:
 				dist[edge] = distance
 				prev[edge] = node
-				q.put(edge)
+				heuristicValue = dist[edge] + sqrt((x2 -dx)*(x2 - dx)+(y2- dy)*(y2-dy))
+				#q.put(edge)
 				visited.append(edge)
-				heappush(queue, edge)
+				heappush(queue, [distance+heuristicValue,edge])
 				
 		
 	if node == dstBox:
-		while node != srcBox:
+		while prev[node] != None:
 			path.append((detail_points[prev[node]], detail_points[node]))
 			node = prev[node]
-	
+		
 	if hasPath < 1:
 		print "No Path Found"
 	
